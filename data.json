@@ -1,0 +1,97 @@
+{
+    "PRIORITETI": [
+      { "id": "10", "name": "Obezbedi da svaki igrač igra minimalno jedan meč", "priority": "1" },
+      { "id": "20", "name": "Maksimizuj broj mečeva", "priority": "2" },
+      { "id": "30", "name": "Prioritizuj jutarnje termine", "priority": "3" },
+      { "id": "40", "name": "Prioritizuj igrače koji imaju najviše preostalih mečeva", "priority": "4" },
+      { "id": "50", "name": "Prioritizuj igrače koji su prijavili najviše termina", "priority": "5" }
+    ],
+    "TERMINI_KLUBA": [
+      { "dan": "2", "sat": "21", "teren": "vIMfQHxSaJFU8ogpAr0v" },
+      { "dan": "5", "sat": "20", "teren": "vIMfQHxSaJFU8ogpAr0v" },
+      { "dan": "5", "sat": "20", "teren": "Zk6uhkn9YXzh123c7Pra" },
+      { "dan": "5", "sat": "21", "teren": "vIMfQHxSaJFU8ogpAr0v" },
+      { "dan": "5", "sat": "21", "teren": "Zk6uhkn9YXzh123c7Pra" },
+      { "dan": "7", "sat": "20", "teren": "vIMfQHxSaJFU8ogpAr0v" },
+      { "dan": "7", "sat": "20", "teren": "Zk6uhkn9YXzh123c7Pra" }
+    ],
+    "IGRACI": [
+      {
+        "PLAYER_ID": "wGdN3AoMQvKGaN3TKKIOwg",
+        "PLAYER_NAME": "Aleksa Begovic",
+        "ZELI_IGRATI_MECEVA": "2",
+        "PREOSTALO_MECEVA": "6",
+        "TERMINI_IGRACA": [
+          { "dan": "2", "sat": "9" },
+          { "dan": "5", "sat": "10" }
+        ],
+        "POTENCIJALNI_PROTIVNICI": ["Nikola Stankovic", "Marko Petrovic"]
+      },
+      {
+        "PLAYER_ID": "mSJWWjoRTQW--UYwURq6Qw",
+        "PLAYER_NAME": "Aleksandar Čvorovic",
+        "ZELI_IGRATI_MECEVA": "1",
+        "PREOSTALO_MECEVA": "6",
+        "TERMINI_IGRACA": [
+          { "dan": "2", "sat": "8" },
+          { "dan": "5", "sat": "12" }
+        ],
+        "POTENCIJALNI_PROTIVNICI": ["Aleksa Begovic", "Nikola Stankovic"]
+      },
+      {
+        "PLAYER_ID": "a-.KFX1M0RY2uDYGVvMeBEg",
+        "PLAYER_NAME": "Nikola Stankovic",
+        "ZELI_IGRATI_MECEVA": "3",
+        "PREOSTALO_MECEVA": "4",
+        "TERMINI_IGRACA": [
+          { "dan": "2", "sat": "10" },
+          { "dan": "5", "sat": "11" }
+        ],
+        "POTENCIJALNI_PROTIVNICI": ["Aleksa Begovic", "Aleksandar Čvorovic"]
+      },
+      {
+        "PLAYER_ID": "c.A.GkV1T72H.W9pofTUxg",
+        "PLAYER_NAME": "Marko Petrovic",
+        "ZELI_IGRATI_MECEVA": "1",
+        "PREOSTALO_MECEVA": "5",
+        "TERMINI_IGRACA": [
+          { "dan": "2", "sat": "11" },
+          { "dan": "5", "sat": "13" }
+        ],
+        "POTENCIJALNI_PROTIVNICI": ["Aleksa Begovic", "Nikola Stankovic"]
+      }
+    ],
+    "RESOURCES": [
+      "Monday 8h (2 courts)",
+      "Monday 9h (1 court)",
+      "Monday 10h (3 courts)",
+      "Tuesday 8h (1 court)",
+      "Tuesday 10h (2 courts)",
+      "Wednesday 10h (3 courts)",
+      "Wednesday 11h (3 courts)",
+      "Thursday: NONE",
+      "Friday 8h (1 court)",
+      "Saturday 8h (2 courts)",
+      "Sunday 11h (2 courts)",
+      "Sunday 12h (1 court)"
+    ],
+    "CONSUMERS": {
+      "Aleksa Begovic": ["Aleksandar Čvorovic", "Nikola Stankovic", "Marko Petrovic"],
+      "Aleksandar Čvorovic": ["Aleksa Begovic"],
+      "Nikola Stankovic": ["Aleksa Begovic", "Marko Petrovic"],
+      "Marko Petrovic": ["Aleksa Begovic", "Nikola Stankovic"]
+    },
+    "playerWishNumberOfMatches": {
+      "Aleksa Begovic": 2,
+      "Aleksandar Čvorovic": 1,
+      "Nikola Stankovic": 3,
+      "Marko Petrovic": 1
+    },
+    "playerCanPlay": {
+      "Aleksa Begovic": ["Tuesday 10h", "Wednesday 10h", "Saturday 8h"],
+      "Aleksandar Čvorovic": ["Monday 8h", "Tuesday 10h"],
+      "Nikola Stankovic": ["Tuesday 10h", "Wednesday 10h", "Friday 8h", "Saturday 8h"],
+      "Marko Petrovic": ["Tuesday 8h", "Wednesday 11h", "Saturday 8h"]
+    }
+  }
+  
