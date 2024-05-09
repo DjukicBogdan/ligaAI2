@@ -1,6 +1,6 @@
-fetch("./data.json")
-  .then((response) => response.json())
-  .then((json) => handleData(json));
+// fetch("./data.json")
+//   .then((response) => response.json())
+//   .then((json) => handleData(json));
 
 async function handleData(json) {
   try {
@@ -18,8 +18,8 @@ async function handleData(json) {
     console.log("Prioritized Matches:", prioritizedMatches);
 
     // Uncomment to send the result back to the Glide application
-    // const response = await sendData('https://liga.bogdandjukic.com/', { matches: prioritizedMatches });
-    // console.log('Result successfully sent:', response);
+    const response = await sendData('https://liga.bogdandjukic.com/', { matches: prioritizedMatches });
+    console.log('Result successfully sent:', response);
   } catch (error) {
     console.error("Error while processing data:", error);
   }
@@ -146,19 +146,20 @@ function prioritizeMatches(matches, priorities, data) {
 }
 
 
-async function sendData(url = "https://liga.bogdandjukic.com/", data = {}) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  // const responseData = await response.json();
+// Funkcija za slanje JSON podataka putem POST zahteva
+async function sendData(url = 'https://liga.bogdandjukic.com/', data = {}) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    const responseData = await response.json();
 
-  // Checking response after sending
-  if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status} - ${responseData.message}`);
-  }
-  return responseData;
+    // Provera odgovora nakon slanja
+    if (!response.ok) {
+        throw new Error(`HTTP greška: ${response.status} - ${responseData.message}`);
+    }
+    return responseData;
 }

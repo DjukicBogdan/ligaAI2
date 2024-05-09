@@ -1,9 +1,18 @@
 <?php
-// Assuming you receive JSON data from Glide app in the POST request
-$json_data = file_get_contents('php://input');
-$data = json_decode($json_data, true); // Convert JSON data to PHP array
+$fetch_data = file_get_contents("php://input");
+$data = json_decode($fetch_data);
+error_log(print_r($data, true));
+if (!$data || !isset($data->matches)) {
+  http_response_code(400);
+  echo json_encode(array("message" => "Invalid data format."));
+  exit();
+}
 
-// Process the data (for demonstration, simply send back the received data)
-header('Content-Type: application/json');
-echo json_encode($data);
+$matches = $data->matches;
+
+// Implement your logic to process the matches data here
+// For demonstration purposes, let's just return the received matches
+
+http_response_code(200);
+echo json_encode($matches);
 ?>
