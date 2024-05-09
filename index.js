@@ -1,104 +1,151 @@
-// Fetching JSON data from Glide application and processing it
 fetch("./data.json")
   .then((response) => response.json())
   .then((json) => handleData(json));
 
 async function handleData(json) {
   try {
-    // Checking JSON format
     if (!json || !json.IGRACI || !Array.isArray(json.IGRACI)) {
-      throw new Error("Invalid JSON data format.");
+      throw new Error("Invalid JSON data format: Missing player information.");
     }
 
-    console.log("JSON:", json); // Logging the JSON data
+    console.log("JSON:", json);
 
-    const matches = getMaxMatches(json);
+    const matches = getValidMatches(json);
     console.log("Matches:", matches);
     console.log("Number of matches:", matches.length);
 
+    const prioritizedMatches = prioritizeMatches(matches, json.PRIORITETI, json);
+    console.log("Prioritized Matches:", prioritizedMatches);
+
     // Uncomment to send the result back to the Glide application
-    const response = await sendData('https://liga.bogdandjukic.com/', { matches });
-    console.log('Result successfully sent:', response);
+    // const response = await sendData('https://liga.bogdandjukic.com/', { matches: prioritizedMatches });
+    // console.log('Result successfully sent:', response);
   } catch (error) {
     console.error("Error while processing data:", error);
   }
 }
 
-// Function to process JSON data and find the maximum number of matches
-function getMaxMatches(data) {
-    // Checking for player data
-    if (!data || !data.IGRACI || !Array.isArray(data.IGRACI)) {
-        throw new Error("Invalid JSON data: Missing player information.");
-    }
+function getValidMatches(data) {
+  if (!data || !data.IGRACI || !Array.isArray(data.IGRACI)) {
+    throw new Error("Invalid JSON data: Missing player information.");
+  }
 
-    const players = data.IGRACI;
-    const matches = [];
-    const availableTimeSlots = {};
+  const players = data.IGRACI;
+  const matches = [];
+  const clubAvailableSlots = data.TERMINI_KLUBA;
 
-    // Initializing available time slots
-    Object.keys(data.playerCanPlay).forEach((player) => {
-        data.playerCanPlay[player].forEach((timeSlot) => {
-            if (!availableTimeSlots[timeSlot]) {
-                availableTimeSlots[timeSlot] = [];
-            }
-            availableTimeSlots[timeSlot].push(player);
-        });
-    });
+  players.forEach((player) => {
+    if (parseInt(player.ZELI_IGRATI_MECEVA) > 0) {
+      const remainingMatches = parseInt(player.ZELI_IGRATI_MECEVA);
+      let playedMatches = 0;
 
-    console.log("Available Time Slots:", availableTimeSlots); // Logging available time slots
-
-    // Sorting time slots based on the number of players available
-    const sortedTimeSlots = Object.entries(availableTimeSlots).sort((a, b) => b[1].length - a[1].length);
-
-    console.log("Sorted Time Slots:", sortedTimeSlots); // Logging sorted time slots
-
-    // Filter out time slots with fewer than 2 available players
-    const filteredTimeSlots = sortedTimeSlots.filter(([timeSlot, playersAvailable]) => playersAvailable.length >= 2);
-
-    // Iterating through the filtered time slots to create matches
-    filteredTimeSlots.forEach(([timeSlot, playersAvailable]) => {
-        console.log(`Players available for ${timeSlot}:`, playersAvailable); // Log players available for each time slot
-        while (playersAvailable.length >= 2) {
-            const player1 = playersAvailable.pop();
-            const player2 = playersAvailable.pop();
-            matches.push({ player1, player2, time: timeSlot });
-        }
-    });
-
-    const prioritizedMatches = prioritizeMatches(matches, data.PRIORITETI);
-    console.log("Prioritized Matches:", prioritizedMatches); // Log prioritized matches
-
-    return prioritizedMatches;
-}
-
-// Function to prioritize matches based on specified criteria
-function prioritizeMatches(matches, priorities) {
-    const prioritizedMatches = [];
-
-    for (const priority of priorities) {
-        switch (priority.id) {
-            case "10":
-                // Ensure each player plays at least one match
-                matches.forEach((match) => {
-                    if (!prioritizedMatches.find((m) => m.player1 === match.player1 || m.player2 === match.player1)) {
-                        prioritizedMatches.push(match);
-                    }
+      player.TERMINI_IGRACA.forEach((slot) => {
+        const clubSlot = clubAvailableSlots.find((clubSlot) => clubSlot.dan === slot.dan && clubSlot.sat === slot.sat);
+        if (clubSlot && playedMatches < remainingMatches) {
+          player.POTENCIJALNI_PROTIVNICI.forEach((opponent) => {
+            const opponentPlayer = players.find((p) => p.PLAYER_NAME === opponent);
+            if (opponentPlayer) {
+              const opponentSlot = opponentPlayer.TERMINI_IGRACA.find((opponentSlot) => opponentSlot.dan === slot.dan && opponentSlot.sat === slot.sat);
+              if (opponentSlot) {
+                matches.push({
+                  player1: player.PLAYER_NAME,
+                  player2: opponent,
+                  time: `${slot.dan} ${slot.sat}`,
                 });
-                break;
-            case "20":
-                // Maximize the number of matches
-                prioritizedMatches.push(...matches);
-                break;
-            // Implement other prioritization criteria as needed
-            default:
-                break;
+                playedMatches++;
+              }
+            }
+          });
         }
+      });
     }
+  });
 
-    return prioritizedMatches;
+  return matches;
 }
 
-// Function to send JSON data via POST request
+function prioritizeMatches(matches, priorities, data) {
+  const prioritizedMatches = new Set(); // Use a Set to store unique matches
+
+  for (const priority of priorities) {
+    switch (priority.id) {
+      case "10":
+        // Ensure each player plays at least one match
+        matches.forEach((match) => {
+          if (!prioritizedMatches.has(match)) { // Use has() to check if a match exists in the Set
+            prioritizedMatches.add(match); // Add match to the Set
+          }
+        });
+        break;
+      case "20":
+        // Maximize the number of matches
+        matches.forEach((match) => prioritizedMatches.add(match)); // Add matches to the Set
+        break;
+      case "30":
+        // Prioritize morning slots (if required)
+        matches.sort((a, b) => {
+          // Extract the hour part from the time string and convert it to a number
+          const hourA = parseInt(a.time.split(" ")[1]);
+          const hourB = parseInt(b.time.split(" ")[1]);
+
+          // Check if the time is before 12:00 PM
+          const isMorningA = hourA <= 12;
+          const isMorningB = hourB <= 12;
+
+          // If both matches are in the morning or both are not, sort by time
+          if (isMorningA === isMorningB) {
+            // Sort by time (earlier time first)
+            return hourA - hourB;
+          } else {
+            // Sort morning match first
+            return isMorningB ? -1 : 1;
+          }
+        });
+
+        matches.forEach((match) => prioritizedMatches.add(match)); // Add matches to the Set
+        break;
+      case "40":
+        // Prioritize players with the most remaining matches
+        matches.sort((a, b) => {
+          const player1Matches = data.IGRACI.find((player) => player.PLAYER_NAME === a.player1).PREOSTALO_MECEVA;
+          const player2Matches = data.IGRACI.find((player) => player.PLAYER_NAME === b.player2).PREOSTALO_MECEVA;
+          return player2Matches - player1Matches;
+        });
+
+        matches.forEach((match) => prioritizedMatches.add(match)); // Add matches to the Set
+        break;
+      case "50":
+        // Prioritize players who have signed up for the most slots
+        // Calculate the number of slots each player has signed up for
+        const playerSlotsCounts = {};
+
+        matches.forEach((match) => {
+          // Increment slot count for player 1
+          playerSlotsCounts[match.player1] = (playerSlotsCounts[match.player1] || 0) + 1;
+          // Increment slot count for player 2
+          playerSlotsCounts[match.player2] = (playerSlotsCounts[match.player2] || 0) + 1;
+        });
+
+        // Sort players based on the number of slots they have signed up for
+        matches.sort((a, b) => {
+          const slotsCountA = playerSlotsCounts[a.player1] + playerSlotsCounts[a.player2];
+          const slotsCountB = playerSlotsCounts[b.player1] + playerSlotsCounts[b.player2];
+          return slotsCountB - slotsCountA; // Sort in descending order of slot counts
+        });
+
+        matches.forEach((match) => prioritizedMatches.add(match)); // Add matches to the Set
+        break;
+
+      // Implement other prioritization criteria as needed
+      default:
+        break;
+    }
+  }
+
+  return Array.from(prioritizedMatches); // Convert the Set back to an array before returning
+}
+
+
 async function sendData(url = "https://liga.bogdandjukic.com/", data = {}) {
   const response = await fetch(url, {
     method: "POST",
